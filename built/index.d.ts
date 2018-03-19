@@ -17,5 +17,8 @@ export * from './storage';
 export * from './token_request';
 export * from './token_request_handler';
 export * from './token_response';
+export * from './user_info_request';
+export * from './user_info_request_handler';
+export * from './user_info_response';
 export * from './types';
 export * from './xhr';
