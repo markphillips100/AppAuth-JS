@@ -47,8 +47,9 @@ export class BaseUserInfoRequestHandler implements UserInfoRequestHandler {
     return (response as UserInfoErrorJson).error === undefined;
   }
 
-  public performUserInfoRequest(configuration: AuthorizationServiceConfiguration, request: UserInfoRequest): Promise<UserInfoResponseJson> {
-
+  public performUserInfoRequest(
+      configuration: AuthorizationServiceConfiguration,
+      request: UserInfoRequest): Promise<UserInfoResponseJson> {
     let userInfoResponse = this.requestor.xhr<UserInfoResponseJson|UserInfoErrorJson>({
       url: configuration.userInfoEndpoint,
       method: 'POST',
