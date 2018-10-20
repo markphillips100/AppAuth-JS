@@ -53,7 +53,7 @@ export class BaseUserInfoRequestHandler implements UserInfoRequestHandler {
     let userInfoResponse = this.requestor.xhr<UserInfoResponseJson|UserInfoErrorJson>({
       url: configuration.userInfoEndpoint,
       method: 'POST',
-      dataType: 'json',  // adding implicit dataType
+//      dataType: 'json',  // adding implicit dataType
       headers: {
         'Authorization': `${request.tokenType} ${request.accessToken}`,
         'Content-Type': 'application/x-www-form-urlencoded'
