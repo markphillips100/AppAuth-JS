@@ -14,8 +14,10 @@
 
 /* Global flags that control the behavior of App Auth JS. */
 
+type Bools = true|false;
+
 /* Logging turned on ? */
-export const IS_LOG = true;
+export const IS_LOG: Bools = true;
 
 /* Profiling turned on ? */
-export const IS_PROFILE = false;
+export const IS_PROFILE: Bools = false;
