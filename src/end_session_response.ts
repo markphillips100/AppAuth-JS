@@ -15,7 +15,9 @@
 /**
  * Represents the EndSessionResponse as a JSON object.
  */
-export interface EndSessionResponseJson { state: string; }
+export interface EndSessionResponseJson {
+  state: string;
+}
 
 /**
  * Represents the EndSessionError as a JSON object.
@@ -33,14 +35,14 @@ export interface EndSessionErrorJson {
  * http://openid.net/specs/openid-connect-session-1_0.html
  */
 export class EndSessionResponse {
-  constructor(public state: string) {}
+  state: string;
+
+  constructor(response: EndSessionResponseJson) {
+    this.state = response.state;
+  }
 
   toJson(): EndSessionResponseJson {
     return {state: this.state};
-  }
-
-  static fromJson(json: EndSessionResponseJson): EndSessionResponse {
-    return new EndSessionResponse(json.state);
   }
 }
 
@@ -50,11 +52,17 @@ export class EndSessionResponse {
  * http://openid.net/specs/openid-connect-session-1_0.html
  */
 export class EndSessionError {
-  constructor(
-      public error: string,
-      public errorDescription?: string,
-      public errorUri?: string,
-      public state?: string) {}
+  error: string;
+  errorDescription?: string;
+  errorUri?: string;
+  state?: string;
+
+  constructor(error: EndSessionErrorJson) {
+    this.error = error.error;
+    this.errorDescription = error.error_description;
+    this.errorUri = error.error_uri;
+    this.state = error.state;
+  }
 
   toJson(): EndSessionErrorJson {
     return {
@@ -63,9 +71,5 @@ export class EndSessionError {
       error_uri: this.errorUri,
       state: this.state
     };
-  }
-
-  static fromJson(json: EndSessionErrorJson): EndSessionError {
-    return new EndSessionError(json.error, json.error_description, json.error_uri, json.state);
   }
 }

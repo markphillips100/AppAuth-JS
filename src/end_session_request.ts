@@ -12,30 +12,26 @@
  * limitations under the License.
  */
 
-import {cryptoGenerateRandom, RandomGenerator} from './crypto_utils';
+import {Crypto, DefaultCrypto} from './crypto_utils';
+import {log} from './logger';
 import {StringMap} from './types';
 
 /**
  * Represents an EndSessionRequest as JSON.
  */
-
-// NOTE:
-// Both post_logout_redirect_uri and state are actually optional.
-// However AppAuth is more opionionated, and requires you to use both.
-
 export interface EndSessionRequestJson {
   id_token_hint: string;
   post_logout_redirect_uri: string;
-  state: string;
+  state?: string;
   extras?: StringMap;
 }
 
 /**
  * Generates a cryptographically random new state. Useful for CSRF protection.
  */
-const BYTES_LENGTH = 10;  // 10 bytes
-const newState = function(generateRandom: RandomGenerator): string {
-  return generateRandom(BYTES_LENGTH);
+const SIZE = 10;  // 10 bytes
+const newState = function(crypto: Crypto): string {
+  return crypto.generateRandom(SIZE);
 };
 
 /**
@@ -44,19 +40,25 @@ const newState = function(generateRandom: RandomGenerator): string {
  * http://openid.net/specs/openid-connect-session-1_0.html
  */
 export class EndSessionRequest {
+  // NOTE:
+  // Both post_logout_redirect_uri and state are actually optional.
+  // However AppAuth is more opionionated, and requires you to use both.
+
+  idTokenHint: string;
+  postLogoutRedirectUri: string;
   state: string;
+  extras?: StringMap;
+
   /**
    * Constructs a new EndSessionRequest.
    * Use a `undefined` value for the `state` parameter, to generate a random
    * state for CSRF protection.
    */
-  constructor(
-      public idTokenHint: string,
-      public postLogoutRedirectUri: string,
-      state?: string,
-      public extras?: StringMap,
-      generateRandom = cryptoGenerateRandom) {
-    this.state = state || newState(generateRandom);
+  constructor(request: EndSessionRequestJson, private crypto: Crypto = new DefaultCrypto()) {
+    this.idTokenHint = request.id_token_hint;
+    this.postLogoutRedirectUri = request.post_logout_redirect_uri;
+    this.state = request.state || newState(crypto);
+    this.extras = request.extras;
   }
 
   /**
@@ -69,13 +71,5 @@ export class EndSessionRequest {
       state: this.state,
       extras: this.extras
     };
-  }
-
-  /**
-   * Creates a new instance of EndSessionRequest.
-   */
-  static fromJson(input: EndSessionRequestJson): EndSessionRequest {
-    return new EndSessionRequest(
-        input.id_token_hint, input.post_logout_redirect_uri, input.state, input.extras);
   }
 }

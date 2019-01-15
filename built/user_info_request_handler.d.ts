@@ -19,6 +19,6 @@ export declare class BaseUserInfoRequestHandler implements UserInfoRequestHandle
     readonly requestor: Requestor;
     readonly utils: QueryStringUtils;
     constructor(requestor?: Requestor, utils?: QueryStringUtils);
-    private isUserInfoResponse(response);
+    private isUserInfoResponse;
     performUserInfoRequest(configuration: AuthorizationServiceConfiguration, request: UserInfoRequest): Promise<UserInfoResponseJson>;
 }

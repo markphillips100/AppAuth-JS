@@ -15,23 +15,21 @@
 import {EndSessionResponse} from './end_session_response';
 
 describe('EndSession Response Tests', () => {
-
   const state = 'state';
 
   it('Constructing an EndSession Response should work', () => {
-    let response = new EndSessionResponse(state);
+    let response = new EndSessionResponse({state: state});
     expect(response).not.toBeNull();
     expect(response.state).toBe(state);
   });
 
   it('toJson() and fromJson() should work', () => {
-    let response = new EndSessionResponse(state);
+    let response = new EndSessionResponse({state: state});
     let json = response.toJson();
     expect(json).not.toBeNull();
     expect(json.state).toBe(state);
-    let newResponse = EndSessionResponse.fromJson(json);
+    let newResponse = new EndSessionResponse(json);
     expect(newResponse).not.toBeNull();
     expect(newResponse.state).toBe(state);
   });
-
 });

@@ -24,10 +24,9 @@ export interface UserInfoErrorJson {
  * http://openid.net/specs/openid-connect-core-1_0.html#UserInfo
  */
 export declare class UserInfoError {
-    readonly error: UserInfoErrorType;
-    readonly errorDescription: string | undefined;
-    readonly errorUri: string | undefined;
-    constructor(error: UserInfoErrorType, errorDescription?: string | undefined, errorUri?: string | undefined);
+    error: UserInfoErrorType;
+    errorDescription: string | undefined;
+    errorUri: string | undefined;
+    constructor(userInfoError: UserInfoErrorJson);
     toJson(): UserInfoErrorJson;
-    static fromJson(input: UserInfoErrorJson): UserInfoError;
 }

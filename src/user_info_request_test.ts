@@ -12,30 +12,21 @@
  * limitations under the License.
  */
 
-import {GRANT_TYPE_AUTHORIZATION_CODE, TokenRequest} from './token_request';
 import {StringMap} from './types';
+import {UserInfoRequest} from './user_info_request';
 
-describe('Token Request tests', () => {
-  const clientId = 'client_id';
-  const redirectUri = 'http://my/redirect_uri';
-  const code = 'some_code';
+describe('User Info Request tests', () => {
+  const tokenType = 'token_type';
+  const accessToken = 'access_token';
   const extras: StringMap = {'key': 'value'};
 
-  let request: TokenRequest = new TokenRequest({
-    client_id: clientId,
-    redirect_uri: redirectUri,
-    grant_type: GRANT_TYPE_AUTHORIZATION_CODE,
-    code: code,
-    refresh_token: undefined,
-    extras: extras
-  });
+  let request: UserInfoRequest =
+      new UserInfoRequest({token_type: tokenType, access_token: accessToken, extras: extras});
 
   it('Basic Token Request Tests', () => {
     expect(request).not.toBeNull();
-    expect(request.clientId).toBe(clientId);
-    expect(request.redirectUri).toBe(redirectUri);
-    expect(request.code).toBe(code);
-    expect(request.grantType).toBe(GRANT_TYPE_AUTHORIZATION_CODE);
+    expect(request.tokenType).toBe(tokenType);
+    expect(request.accessToken).toBe(accessToken);
     expect(request.extras).toBeTruthy();
     expect(request.extras!['key']).toBe('value');
     expect(request.extras).toEqual(extras);
@@ -44,12 +35,10 @@ describe('Token Request tests', () => {
   it('To Json() and from Json() should work', () => {
     let json = JSON.parse(JSON.stringify(request.toJson()));
     expect(json).not.toBeNull();
-    let newRequest = new TokenRequest(json);
+    let newRequest = new UserInfoRequest(json);
     expect(newRequest).not.toBeNull();
-    expect(newRequest.clientId).toBe(clientId);
-    expect(newRequest.redirectUri).toBe(redirectUri);
-    expect(newRequest.code).toBe(code);
-    expect(newRequest.grantType).toBe(GRANT_TYPE_AUTHORIZATION_CODE);
+    expect(newRequest.tokenType).toBe(tokenType);
+    expect(newRequest.accessToken).toBe(accessToken);
     expect(newRequest.extras).toBeTruthy();
     expect(newRequest.extras!['key']).toBe('value');
     expect(newRequest.extras).toEqual(extras);

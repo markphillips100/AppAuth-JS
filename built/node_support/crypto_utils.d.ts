@@ -1,4 +1,5 @@
-import * as cryptoUtils from '../crypto_utils';
-export interface RandomGenerator extends cryptoUtils.RandomGenerator {
+import { Crypto } from '../crypto_utils';
+export declare class NodeCrypto implements Crypto {
+    generateRandom(size: number): string;
+    deriveChallenge(code: string): Promise<string>;
 }
-export declare const nodeCryptoGenerateRandom: RandomGenerator;

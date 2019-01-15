@@ -15,14 +15,10 @@
 import {EndSessionNotifier, EndSessionRequestHandler} from './end_session_request_handler';
 
 describe('Tests for the EndSession Request handler', () => {
-
   describe('Basic protocol tests', () => {
-
     it('Basic endsession flow tests', (done: DoneFn) => {
       let notifier = new EndSessionNotifier();
       done();
     });
-
   });
-
 });

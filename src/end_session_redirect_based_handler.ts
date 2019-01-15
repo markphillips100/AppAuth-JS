@@ -12,16 +12,15 @@
  * limitations under the License.
  */
 
-import {AuthorizationServiceConfiguration, AuthorizationServiceConfigurationJson} from './authorization_service_configuration';
-import {RandomGenerator} from './crypto_utils';
-import {EndSessionRequest, EndSessionRequestJson} from './end_session_request';
-import {ENDSESSION_BUILT_IN_PARAMETERS, EndSessionRequestHandler, EndSessionRequestResponse} from './end_session_request_handler';
-import {EndSessionError, EndSessionResponse, EndSessionResponseJson} from './end_session_response'
-import {cryptoGenerateRandom, StorageBackend} from './index';
+import {AuthorizationServiceConfiguration} from './authorization_service_configuration';
+import {Crypto, DefaultCrypto} from './crypto_utils';
+import {EndSessionRequest} from './end_session_request';
+import {EndSessionRequestHandler, EndSessionRequestResponse} from './end_session_request_handler';
+import {EndSessionError, EndSessionResponse} from './end_session_response'
 import {log} from './logger';
-import {BasicQueryStringUtils, QueryStringUtils} from './query_string_utils';
-import {LocalStorageBackend} from './storage';
-import {LocationLike, StringMap} from './types';
+import {BasicQueryStringUtils} from './query_string_utils';
+import {LocalStorageBackend, StorageBackend} from './storage';
+import {LocationLike} from './types';
 
 
 /** key for endsession request. */
@@ -51,14 +50,14 @@ export class EndSessionRedirectRequestHandler extends EndSessionRequestHandler {
       public storageBackend: StorageBackend = new LocalStorageBackend(),
       utils = new BasicQueryStringUtils(),
       public locationLike: LocationLike = window.location,
-      generateRandom = cryptoGenerateRandom) {
-    super(utils, generateRandom);
+      crypto: Crypto = new DefaultCrypto()) {
+    super(utils, crypto);
   }
 
   performEndSessionRequest(
       configuration: AuthorizationServiceConfiguration,
       request: EndSessionRequest) {
-    let handle = this.generateRandom();
+    const handle = this.crypto.generateRandom(10);
     // before you make request, persist all request related data in local storage.
     let persisted = Promise.all([
       this.storageBackend.setItem(ENDSESSION_REQUEST_HANDLE_KEY, handle),
@@ -90,7 +89,7 @@ export class EndSessionRedirectRequestHandler extends EndSessionRequestHandler {
             // requires a corresponding instance of result
             // TODO(rahulrav@): check for inconsitent state here
             .then(result => JSON.parse(result!))
-            .then(json => EndSessionRequest.fromJson(json))
+            .then(json => new EndSessionRequest(json))
             .then(request => {
               // check redirect_uri and state
               let currentUri = `${this.locationLike.origin}${this.locationLike.pathname}`;
@@ -106,9 +105,14 @@ export class EndSessionRedirectRequestHandler extends EndSessionRequestHandler {
                   // get additional optional info.
                   let errorUri = queryParams['error_uri'];
                   let errorDescription = queryParams['error_description'];
-                  endSessionError = new EndSessionError(error, errorDescription, errorUri, state);
+                  endSessionError = new EndSessionError({
+                    error: error,
+                    error_description: errorDescription,
+                    error_uri: errorUri,
+                    state: state
+                  });
                 } else {
-                  endSessionResponse = new EndSessionResponse(state!);
+                  endSessionResponse = new EndSessionResponse({state: state});
                 }
                 // cleanup state
                 return Promise

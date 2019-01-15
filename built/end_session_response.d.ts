@@ -20,9 +20,8 @@ export interface EndSessionErrorJson {
  */
 export declare class EndSessionResponse {
     state: string;
-    constructor(state: string);
+    constructor(response: EndSessionResponseJson);
     toJson(): EndSessionResponseJson;
-    static fromJson(json: EndSessionResponseJson): EndSessionResponse;
 }
 /**
  * Represents the EndSession error response.
@@ -31,10 +30,9 @@ export declare class EndSessionResponse {
  */
 export declare class EndSessionError {
     error: string;
-    errorDescription: string | undefined;
-    errorUri: string | undefined;
-    state: string | undefined;
-    constructor(error: string, errorDescription?: string | undefined, errorUri?: string | undefined, state?: string | undefined);
+    errorDescription?: string;
+    errorUri?: string;
+    state?: string;
+    constructor(error: EndSessionErrorJson);
     toJson(): EndSessionErrorJson;
-    static fromJson(json: EndSessionErrorJson): EndSessionError;
 }

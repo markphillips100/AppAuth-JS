@@ -16,17 +16,24 @@ import {EndSessionRequest} from './end_session_request';
 import {StringMap} from './types';
 
 describe('EndSessionRequest Tests', () => {
-
   const idTokenHint = 'id_token_hint';
   const postLogoutRedirectUri = 'http://my/post_logout_redirect_uri';
   const state = 'state';
   const extras: StringMap = {'key': 'value'};
 
-  let request: EndSessionRequest =
-      new EndSessionRequest(idTokenHint, postLogoutRedirectUri, state, extras);
+  let request: EndSessionRequest = new EndSessionRequest({
+    id_token_hint: idTokenHint,
+    post_logout_redirect_uri: postLogoutRedirectUri,
+    state: state,
+    extras: extras
+  });
 
-  let request2: EndSessionRequest =
-      new EndSessionRequest(idTokenHint, postLogoutRedirectUri, undefined, extras);
+  let request2: EndSessionRequest = new EndSessionRequest({
+    id_token_hint: idTokenHint,
+    post_logout_redirect_uri: postLogoutRedirectUri,
+    state: undefined,
+    extras: extras
+  });
 
   it('Basic EndSession Request Tests', () => {
     expect(request).not.toBeNull();
@@ -38,10 +45,10 @@ describe('EndSessionRequest Tests', () => {
     expect(request.extras).toEqual(extras);
   });
 
-  it('To Json() and from Json() should work', () => {
+  it('To Json() and from Json() should work', (done: DoneFn) => {
     let json = JSON.parse(JSON.stringify(request.toJson()));
     expect(json).not.toBeNull();
-    let newRequest = EndSessionRequest.fromJson(json);
+    let newRequest = new EndSessionRequest(json);
     expect(newRequest).not.toBeNull();
     expect(newRequest.idTokenHint).toBe(idTokenHint);
     expect(newRequest.postLogoutRedirectUri).toBe(postLogoutRedirectUri);
@@ -54,5 +61,4 @@ describe('EndSessionRequest Tests', () => {
   it('Expect cryptographic newState() to populate state', () => {
     expect(request2.state).not.toBeNull();
   });
-
 });

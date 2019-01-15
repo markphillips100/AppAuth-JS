@@ -30,7 +30,15 @@ export interface UserInfoRequestJson {
  * http://openid.net/specs/openid-connect-core-1_0.html#UserInfo
  */
 export class UserInfoRequest {
-  constructor(public tokenType: string, public accessToken: string, public extras?: StringMap) {}
+  tokenType: string;
+  accessToken: string;
+  extras: StringMap|undefined;
+
+  constructor(request: UserInfoRequestJson) {
+    this.tokenType = request.token_type;
+    this.accessToken = request.access_token;
+    this.extras = request.extras;
+  }
 
   /**
    * Serializes a UserInfo to a JavaScript object.
@@ -40,7 +48,7 @@ export class UserInfoRequest {
   }
 
   toStringMap(): StringMap {
-    let map: StringMap = {};
+    let map: StringMap = {token_type: this.tokenType, access_token: this.accessToken};
 
     // copy over extras
     if (this.extras) {
@@ -53,9 +61,5 @@ export class UserInfoRequest {
     }
 
     return map;
-  }
-
-  static fromJson(input: UserInfoRequestJson): UserInfoRequest {
-    return new UserInfoRequest(input.token_type, input.access_token, input.extras);
   }
 }

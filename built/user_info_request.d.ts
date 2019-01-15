@@ -16,11 +16,10 @@ export declare class UserInfoRequest {
     tokenType: string;
     accessToken: string;
     extras: StringMap | undefined;
-    constructor(tokenType: string, accessToken: string, extras?: StringMap | undefined);
+    constructor(request: UserInfoRequestJson);
     /**
      * Serializes a UserInfo to a JavaScript object.
      */
     toJson(): UserInfoRequestJson;
     toStringMap(): StringMap;
-    static fromJson(input: UserInfoRequestJson): UserInfoRequest;
 }

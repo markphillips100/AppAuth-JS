@@ -13,9 +13,9 @@
  */
 
 import {AuthorizationServiceConfiguration} from './authorization_service_configuration';
-import {cryptoGenerateRandom, RandomGenerator} from './crypto_utils';
-import {EndSessionRequest, EndSessionRequestJson} from './end_session_request';
-import {EndSessionError, EndSessionErrorJson, EndSessionResponse, EndSessionResponseJson} from './end_session_response';
+import {Crypto} from './crypto_utils';
+import {EndSessionRequest} from './end_session_request';
+import {EndSessionError, EndSessionResponse} from './end_session_response';
 import {log} from './logger';
 import {QueryStringUtils} from './query_string_utils';
 import {StringMap} from './types';
@@ -72,7 +72,7 @@ export const ENDSESSION_BUILT_IN_PARAMETERS =
  * using various methods (iframe / popup / different process etc.).
  */
 export abstract class EndSessionRequestHandler {
-  constructor(public utils: QueryStringUtils, protected generateRandom: RandomGenerator) {}
+  constructor(public utils: QueryStringUtils, protected crypto: Crypto) {}
 
   // notifier send the response back to the client.
   protected notifier: EndSessionNotifier|null = null;
@@ -113,7 +113,7 @@ export abstract class EndSessionRequestHandler {
   /**
    * Completes the endsession request if necessary & when possible.
    */
-  completeEndSessionRequestIfPossible(): void {
+  completeEndSessionRequestIfPossible(): Promise<void> {
     // call complete endsession if possible to see there might
     // be a response that needs to be delivered.
     log(`Checking to see if there is an endsession response to be delivered.`);
@@ -121,7 +121,7 @@ export abstract class EndSessionRequestHandler {
       log(`Notifier is not present on EndSessionRequest handler.
           No delivery of result will be possible`)
     }
-    this.completeEndSessionRequest().then(result => {
+    return this.completeEndSessionRequest().then(result => {
       if (!result) {
         log(`No result is available yet.`);
       }

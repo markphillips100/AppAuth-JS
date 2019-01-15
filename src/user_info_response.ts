@@ -15,7 +15,10 @@
 /**
  * Represents the UserInfoResponse as a JSON Object.
  */
-export interface UserInfoResponseJson { sub: string; }
+export interface UserInfoResponseJson {
+  sub: string;
+}
+
 
 /**
  * Represents the possible error codes from the user info endpoint.
@@ -39,18 +42,19 @@ export interface UserInfoErrorJson {
  * http://openid.net/specs/openid-connect-core-1_0.html#UserInfo
  */
 export class UserInfoError {
-  constructor(
-      public readonly error: UserInfoErrorType,
-      public readonly errorDescription?: string,
-      public readonly errorUri?: string) {}
+  error: UserInfoErrorType;
+  errorDescription: string|undefined;
+  errorUri: string|undefined;
+
+  constructor(userInfoError: UserInfoErrorJson) {
+    this.error = userInfoError.error;
+    this.errorDescription = userInfoError.error_description;
+    this.errorUri = userInfoError.error_uri;
+  }
 
   toJson(): UserInfoErrorJson {
     return {
       error: this.error, error_description: this.errorDescription, error_uri: this.errorUri
     }
-  }
-
-  static fromJson(input: UserInfoErrorJson) {
-    return new UserInfoError(input.error, input.error_description, input.error_uri);
   }
 }

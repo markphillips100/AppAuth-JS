@@ -14,12 +14,10 @@
 
 import {AuthorizationServiceConfiguration} from './authorization_service_configuration';
 import {AppAuthError} from './errors';
-import {log} from './logger';
 import {BasicQueryStringUtils, QueryStringUtils} from './query_string_utils';
 import {RevokeTokenRequest} from './revoke_token_request';
 import {TokenRequest} from './token_request';
 import {TokenError, TokenErrorJson, TokenResponse, TokenResponseJson} from './token_response';
-import {StringMap} from './types';
 import {JQueryRequestor, Requestor} from './xhr';
 
 
@@ -57,9 +55,8 @@ export class BaseTokenRequestHandler implements TokenRequestHandler {
     let revokeTokenResponse = this.requestor.xhr<boolean>({
       url: configuration.revocationEndpoint,
       method: 'POST',
-      dataType: 'json',  // adding implicit dataType
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-      data: request.toJson()
+      data: this.utils.stringify(request.toStringMap())
     });
 
     return revokeTokenResponse.then(response => {
@@ -67,22 +64,38 @@ export class BaseTokenRequestHandler implements TokenRequestHandler {
     });
   }
 
+  // performRevokeTokenRequest(
+  //     configuration: AuthorizationServiceConfiguration,
+  //     request: RevokeTokenRequest): Promise<boolean> {
+  //   let revokeTokenResponse = this.requestor.xhr<boolean>({
+  //     url: configuration.revocationEndpoint,
+  //     method: 'POST',
+  //     dataType: 'json',  // adding implicit dataType
+  //     headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+  //     data: request.toJson()
+  //   });
+
+  //   return revokeTokenResponse.then(response => {
+  //     return true;
+  //   });
+  // }
+
   performTokenRequest(configuration: AuthorizationServiceConfiguration, request: TokenRequest):
       Promise<TokenResponse> {
     let tokenResponse = this.requestor.xhr<TokenResponseJson|TokenErrorJson>({
       url: configuration.tokenEndpoint,
       method: 'POST',
-//      dataType: 'json',  // adding implicit dataType
+      //      dataType: 'json',  // adding implicit dataType
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       data: this.utils.stringify(request.toStringMap())
     });
 
     return tokenResponse.then(response => {
       if (this.isTokenResponse(response)) {
-        return TokenResponse.fromJson(response);
+        return new TokenResponse(response);
       } else {
         return Promise.reject<TokenResponse>(
-            new AppAuthError(response.error, TokenError.fromJson(response)));
+            new AppAuthError(response.error, new TokenError(response)));
       }
     });
   }

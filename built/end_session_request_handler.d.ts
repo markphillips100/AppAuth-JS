@@ -1,5 +1,5 @@
 import { AuthorizationServiceConfiguration } from './authorization_service_configuration';
-import { RandomGenerator } from './crypto_utils';
+import { Crypto } from './crypto_utils';
 import { EndSessionRequest } from './end_session_request';
 import { EndSessionError, EndSessionResponse } from './end_session_response';
 import { QueryStringUtils } from './query_string_utils';
@@ -35,8 +35,8 @@ export declare const ENDSESSION_BUILT_IN_PARAMETERS: string[];
  */
 export declare abstract class EndSessionRequestHandler {
     utils: QueryStringUtils;
-    protected generateRandom: RandomGenerator;
-    constructor(utils: QueryStringUtils, generateRandom: RandomGenerator);
+    protected crypto: Crypto;
+    constructor(utils: QueryStringUtils, crypto: Crypto);
     protected notifier: EndSessionNotifier | null;
     /**
      * A utility method to be able to build the endsession request URL.
@@ -45,7 +45,7 @@ export declare abstract class EndSessionRequestHandler {
     /**
      * Completes the endsession request if necessary & when possible.
      */
-    completeEndSessionRequestIfPossible(): void;
+    completeEndSessionRequestIfPossible(): Promise<void>;
     /**
      * Sets the default EndSession Service notifier.
      */
