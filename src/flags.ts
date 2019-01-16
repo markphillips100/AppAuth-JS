@@ -17,7 +17,7 @@
 type Bools = true|false;
 
 /* Logging turned on ? */
-export const IS_LOG: Bools = true;
+export const IS_LOG: Bools = false;
 
 /* Profiling turned on ? */
 export const IS_PROFILE: Bools = false;
