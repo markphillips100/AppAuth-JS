@@ -12,14 +12,14 @@
  * limitations under the License.
  */
 
-import {AuthorizationServiceConfiguration} from './authorization_service_configuration';
-import {AppAuthError} from './errors';
-import {log} from './logger';
-import {BasicQueryStringUtils, QueryStringUtils} from './query_string_utils';
-import {StringMap} from './types';
+import {AuthorizationServiceConfiguration} from '../authorization_service_configuration';
+import {AppAuthError} from '../errors';
+import {log} from '../logger';
+import {BasicQueryStringUtils, QueryStringUtils} from '../query_string_utils';
+import {StringMap} from '../types';
 import {UserInfoRequest} from './user_info_request';
 import {UserInfoError, UserInfoErrorJson, UserInfoResponseJson} from './user_info_response';
-import {JQueryRequestor, Requestor} from './xhr';
+import {JQueryRequestor, Requestor} from '../xhr';
 
 
 /**

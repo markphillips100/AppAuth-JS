@@ -12,15 +12,15 @@
  * limitations under the License.
  */
 
-import {AuthorizationServiceConfiguration} from './authorization_service_configuration';
-import {Crypto, DefaultCrypto} from './crypto_utils';
+import {AuthorizationServiceConfiguration} from '../authorization_service_configuration';
+import {Crypto, DefaultCrypto} from '../crypto_utils';
 import {EndSessionRequest} from './end_session_request';
 import {EndSessionRequestHandler, EndSessionRequestResponse} from './end_session_request_handler';
 import {EndSessionError, EndSessionResponse} from './end_session_response'
-import {log} from './logger';
-import {BasicQueryStringUtils} from './query_string_utils';
-import {LocalStorageBackend, StorageBackend} from './storage';
-import {LocationLike} from './types';
+import {log} from '../logger';
+import {BasicQueryStringUtils} from '../query_string_utils';
+import {LocalStorageBackend, StorageBackend} from '../storage';
+import {LocationLike} from '../types';
 
 
 /** key for endsession request. */

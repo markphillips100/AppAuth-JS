@@ -13,7 +13,7 @@
  */
 
 import {EndSessionRequest} from './end_session_request';
-import {StringMap} from './types';
+import {StringMap} from '../types';
 
 describe('EndSessionRequest Tests', () => {
   const idTokenHint = 'id_token_hint';

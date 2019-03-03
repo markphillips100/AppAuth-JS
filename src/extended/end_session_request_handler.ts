@@ -12,13 +12,13 @@
  * limitations under the License.
  */
 
-import {AuthorizationServiceConfiguration} from './authorization_service_configuration';
-import {Crypto} from './crypto_utils';
+import {AuthorizationServiceConfiguration} from '../authorization_service_configuration';
+import {Crypto} from '../crypto_utils';
 import {EndSessionRequest} from './end_session_request';
 import {EndSessionError, EndSessionResponse} from './end_session_response';
-import {log} from './logger';
-import {QueryStringUtils} from './query_string_utils';
-import {StringMap} from './types';
+import {log} from '../logger';
+import {QueryStringUtils} from '../query_string_utils';
+import {StringMap} from '../types';
 
 /**
  * This type represents a lambda that can take an EndSessionRequest,

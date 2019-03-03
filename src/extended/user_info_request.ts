@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import {StringMap} from './types';
+import {StringMap} from '../types';
 
 /**
  * Represents the user info Request as JSON.

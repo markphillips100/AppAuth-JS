@@ -12,7 +12,7 @@
  * limitations under the License.
  */
 
-import {StringMap} from './types';
+import {StringMap} from '../types';
 import {UserInfoRequest} from './user_info_request';
 
 describe('User Info Request tests', () => {

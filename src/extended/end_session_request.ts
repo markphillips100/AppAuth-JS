@@ -12,9 +12,9 @@
  * limitations under the License.
  */
 
-import {Crypto, DefaultCrypto} from './crypto_utils';
-import {log} from './logger';
-import {StringMap} from './types';
+import {Crypto, DefaultCrypto} from '../crypto_utils';
+import {log} from '../logger';
+import {StringMap} from '../types';
 
 /**
  * Represents an EndSessionRequest as JSON.
