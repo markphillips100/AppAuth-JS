@@ -13,19 +13,16 @@
  */
 
 import * as crypto from 'crypto';
-import * as cryptoUtils from '../crypto_utils';
+import { bufferToString, Crypto, urlSafe } from '../crypto_utils';
 
-// Avoids TypeScript error when defaulting to `nodeCryptoGenerateRandom` in `NodeBasedHandler`
-export interface RandomGenerator extends cryptoUtils.RandomGenerator { };
-
-const DEFAULT_SIZE = 1; /** size in bytes */
-
-export const nodeCryptoGenerateRandom: RandomGenerator = (sizeInBytes = DEFAULT_SIZE) => {
-  const buffer = new Uint8Array(sizeInBytes);
-  const bytes = crypto.randomBytes(sizeInBytes);
-  // copy
-  for (let i = 0; i < bytes.length; i += 1) {
-    buffer[i] = bytes[i];
+export class NodeCrypto implements Crypto {
+  generateRandom(size: number): string {
+    const bytes = crypto.randomBytes(size);
+    return bufferToString(new Uint8Array(bytes.buffer));
   }
-  return cryptoUtils.bufferToString(buffer);
-};
+
+  deriveChallenge(code: string): Promise<string> {
+    const hash = crypto.createHash('sha256').update(code).digest();
+    return Promise.resolve(urlSafe(new Uint8Array(hash.buffer)));
+  }
+}

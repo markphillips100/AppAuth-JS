@@ -12,13 +12,14 @@
  * limitations under the License.
  */
 
-import {AuthorizationRequest, AuthorizationRequestJson} from './authorization_request';
-import {AuthorizationError, AuthorizationErrorJson, AuthorizationResponse, AuthorizationResponseJson} from './authorization_response';
+import {AuthorizationRequest} from './authorization_request';
+import {AuthorizationError, AuthorizationResponse} from './authorization_response';
 import {AuthorizationServiceConfiguration} from './authorization_service_configuration';
-import {cryptoGenerateRandom, RandomGenerator} from './crypto_utils';
+import {Crypto} from './crypto_utils';
 import {log} from './logger';
 import {QueryStringUtils} from './query_string_utils';
 import {StringMap} from './types';
+
 
 /**
  * This type represents a lambda that can take an AuthorizationRequest,
@@ -72,7 +73,7 @@ export const BUILT_IN_PARAMETERS = ['redirect_uri', 'client_id', 'response_type'
  * using various methods (iframe / popup / different process etc.).
  */
 export abstract class AuthorizationRequestHandler {
-  constructor(public utils: QueryStringUtils, protected generateRandom: RandomGenerator) {}
+  constructor(public utils: QueryStringUtils, protected crypto: Crypto) {}
 
   // notifier send the response back to the client.
   protected notifier: AuthorizationNotifier|null = null;
@@ -114,7 +115,7 @@ export abstract class AuthorizationRequestHandler {
   /**
    * Completes the authorization request if necessary & when possible.
    */
-  completeAuthorizationRequestIfPossible(): void {
+  completeAuthorizationRequestIfPossible(): Promise<void> {
     // call complete authorization if possible to see there might
     // be a response that needs to be delivered.
     log(`Checking to see if there is an authorization response to be delivered.`);
@@ -122,7 +123,7 @@ export abstract class AuthorizationRequestHandler {
       log(`Notifier is not present on AuthorizationRequest handler.
           No delivery of result will be possible`)
     }
-    this.completeAuthorizationRequest().then(result => {
+    return this.completeAuthorizationRequest().then(result => {
       if (!result) {
         log(`No result is available yet.`);
       }

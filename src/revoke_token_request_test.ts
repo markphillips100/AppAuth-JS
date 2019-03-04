@@ -12,15 +12,12 @@
  * limitations under the License.
  */
 
-import {RevokeTokenRequest, RevokeTokenRequestJson} from './revoke_token_request';
-import {StringMap} from './types';
+import {RevokeTokenRequest} from './revoke_token_request';
 
 describe('Revoke Token Request tests', () => {
-
   const token = 'token';
 
-  let request: RevokeTokenRequest = new RevokeTokenRequest(token);
-
+  let request: RevokeTokenRequest = new RevokeTokenRequest({token: token});
   it('Basic Revoke Token Request Tests', () => {
     expect(request).not.toBeNull();
     expect(request.token).toBe(token);
@@ -29,22 +26,24 @@ describe('Revoke Token Request tests', () => {
   it('To Json() and from Json() should work', () => {
     let json = JSON.parse(JSON.stringify(request.toJson()));
     expect(json).not.toBeNull();
-    let newRequest = RevokeTokenRequest.fromJson(json);
+    let newRequest = new RevokeTokenRequest(json);
     expect(newRequest).not.toBeNull();
     expect(newRequest.token).toBe(token);
   });
-
 });
 
 describe('Authenticated Revoke Token Request tests', () => {
-
   const token = 'token';
   const tokenTypeHint = 'refresh_token';
   const clientId = 'client_id';
   const clientSecret = 'client_secret';
 
-  let request: RevokeTokenRequest =
-      new RevokeTokenRequest(token, tokenTypeHint, clientId, clientSecret);
+  let request: RevokeTokenRequest = new RevokeTokenRequest({
+    token: token,
+    token_type_hint: tokenTypeHint,
+    client_id: clientId,
+    client_secret: clientSecret
+  });
 
   it('Basic Revoke Token Request Tests', () => {
     expect(request).not.toBeNull();
@@ -57,12 +56,11 @@ describe('Authenticated Revoke Token Request tests', () => {
   it('To Json() and from Json() should work', () => {
     let json = JSON.parse(JSON.stringify(request.toJson()));
     expect(json).not.toBeNull();
-    let newRequest = RevokeTokenRequest.fromJson(json);
+    let newRequest = new RevokeTokenRequest(json);
     expect(newRequest).not.toBeNull();
     expect(newRequest.token).toBe(token);
     expect(newRequest.tokenTypeHint).toBe(tokenTypeHint);
     expect(newRequest.clientId).toBe(clientId);
     expect(newRequest.clientSecret).toBe(clientSecret);
   });
-
 });

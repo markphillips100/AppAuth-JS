@@ -1,4 +1,3 @@
-import { nodeCryptoGenerateRandom, RandomGenerator } from './crypto_utils';
 /*
  * Copyright 2017 Google Inc.
  *
@@ -13,20 +12,21 @@ import { nodeCryptoGenerateRandom, RandomGenerator } from './crypto_utils';
  * limitations under the License.
  */
 
+import * as EventEmitter from 'events';
+import * as Http from 'http';
+import * as Url from 'url';
+import {AuthorizationRequest} from '../authorization_request';
+import {AuthorizationRequestHandler, AuthorizationRequestResponse} from '../authorization_request_handler';
+import {AuthorizationError, AuthorizationResponse} from '../authorization_response';
+import {AuthorizationServiceConfiguration} from '../authorization_service_configuration';
+import {Crypto} from '../crypto_utils';
+import {log} from '../logger';
+import {BasicQueryStringUtils, QueryStringUtils} from '../query_string_utils';
+import {NodeCrypto} from './crypto_utils';
+
+
 // TypeScript typings for `opener` are not correct and do not export it as module
 import opener = require('opener');
-import { Request, ServerConnectionOptions, Server, ServerConnection, ReplyNoContinue } from 'hapi';
-import * as  EventEmitter from 'events';
-import { BasicQueryStringUtils, QueryStringUtils } from '../query_string_utils';
-import { AuthorizationRequest, AuthorizationRequestJson } from '../authorization_request';
-import {
-    AuthorizationRequestHandler,
-    AuthorizationRequestResponse,
-    BUILT_IN_PARAMETERS
-} from '../authorization_request_handler';
-import { AuthorizationError, AuthorizationResponse, AuthorizationResponseJson, AuthorizationErrorJson } from '../authorization_response'
-import { AuthorizationServiceConfiguration, AuthorizationServiceConfigurationJson } from '../authorization_service_configuration';
-import { log } from '../logger';
 
 class ServerEventsEmitter extends EventEmitter {
   static ON_UNABLE_TO_START = 'unable_to_start';
@@ -35,29 +35,68 @@ class ServerEventsEmitter extends EventEmitter {
 
 export class NodeBasedHandler extends AuthorizationRequestHandler {
   // the handle to the current authorization request
-  authorizationPromise: Promise<AuthorizationRequestResponse | null> | null = null;
+  authorizationPromise: Promise<AuthorizationRequestResponse|null>|null = null;
 
   constructor(
-    // default to port 8000
-    public httpServerPort = 8000,
-    utils: QueryStringUtils = new BasicQueryStringUtils(),
-    generateRandom = nodeCryptoGenerateRandom) {
-    super(utils, generateRandom);
+      // default to port 8000
+      public httpServerPort = 8000,
+      utils: QueryStringUtils = new BasicQueryStringUtils(),
+      crypto: Crypto = new NodeCrypto()) {
+    super(utils, crypto);
   }
 
   performAuthorizationRequest(
-    configuration: AuthorizationServiceConfiguration, request: AuthorizationRequest) {
+      configuration: AuthorizationServiceConfiguration,
+      request: AuthorizationRequest) {
     // use opener to launch a web browser and start the authorization flow.
     // start a web server to handle the authorization response.
-    const server = new Server();
-    server.connection(<ServerConnectionOptions>{ port: this.httpServerPort });
     const emitter = new ServerEventsEmitter();
+
+    const requestHandler = (httpRequest: Http.IncomingMessage, response: Http.ServerResponse) => {
+      if (!httpRequest.url) {
+        return;
+      }
+
+      const url = Url.parse(httpRequest.url);
+      const searchParams = new Url.URLSearchParams(url.query || '');
+
+      const state = searchParams.get('state') || undefined;
+      const code = searchParams.get('code');
+      const error = searchParams.get('error');
+
+      if (!state && !code && !error) {
+        // ignore irrelevant requests (e.g. favicon.ico)
+        return;
+      }
+
+      log('Handling Authorization Request ', searchParams, state, code, error);
+      let authorizationResponse: AuthorizationResponse|null = null;
+      let authorizationError: AuthorizationError|null = null;
+      if (error) {
+        log('error');
+        // get additional optional info.
+        const errorUri = searchParams.get('error_uri') || undefined;
+        const errorDescription = searchParams.get('error_description') || undefined;
+        authorizationError = new AuthorizationError(
+            {error: error, error_description: errorDescription, error_uri: errorUri, state: state});
+      } else {
+        authorizationResponse = new AuthorizationResponse({code: code!, state: state!});
+      }
+      const completeResponse = {
+        request,
+        response: authorizationResponse,
+        error: authorizationError
+      } as AuthorizationRequestResponse;
+      emitter.emit(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, completeResponse);
+      response.end('Close your browser to continue');
+    };
 
     this.authorizationPromise = new Promise<AuthorizationRequestResponse>((resolve, reject) => {
       emitter.once(ServerEventsEmitter.ON_UNABLE_TO_START, () => {
         reject(`Unable to create HTTP server at port ${this.httpServerPort}`);
       });
       emitter.once(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, (result: any) => {
+        server.close();
         // resolve pending promise
         resolve(result as AuthorizationRequestResponse);
         // complete authorization flow
@@ -65,51 +104,25 @@ export class NodeBasedHandler extends AuthorizationRequestHandler {
       });
     });
 
-    server.route({
-      method: 'GET',
-      path: '/',
-      handler: (hapiRequest: Request, hapiResponse: ReplyNoContinue) => {
-        let queryParams = hapiRequest.query as (AuthorizationResponseJson & AuthorizationErrorJson);
-        let state = queryParams['state'];
-        let code = queryParams['code'];
-        let error = queryParams['error'];
-        log('Handling Authorization Request ', queryParams, state, code, error);
-        let authorizationResponse: AuthorizationResponse | null = null;
-        let authorizationError: AuthorizationError | null = null;
-        if (error) {
-          // get additional optional info.
-          let errorUri = queryParams['error_uri'];
-          let errorDescription = queryParams['error_description'];
-          authorizationError = new AuthorizationError(error, errorDescription, errorUri, state);
-        } else {
-          authorizationResponse = new AuthorizationResponse(code!, state!);
-        }
-        let completeResponse = {
-          request: request,
-          response: authorizationResponse,
-          error: authorizationError
-        } as AuthorizationRequestResponse;
-        emitter.emit(ServerEventsEmitter.ON_AUTHORIZATION_RESPONSE, completeResponse);
-        hapiResponse('Close your browser to continue');
-        server.stop();
-      }
-    });
-
-    server.start()
-      .then(() => {
-        let url = this.buildRequestUrl(configuration, request);
-        log('Making a request to ', request, url);
-        opener(url);
-      })
-      .catch(error => {
-        log('Something bad happened ', error);
-      });
+    let server: Http.Server;
+    request.setupCodeVerifier()
+        .then(() => {
+          server = Http.createServer(requestHandler);
+          server.listen(this.httpServerPort);
+          const url = this.buildRequestUrl(configuration, request);
+          log('Making a request to ', request, url);
+          opener(url);
+        })
+        .catch((error) => {
+          log('Something bad happened ', error);
+          emitter.emit(ServerEventsEmitter.ON_UNABLE_TO_START);
+        });
   }
 
-  protected completeAuthorizationRequest(): Promise<AuthorizationRequestResponse | null> {
+  protected completeAuthorizationRequest(): Promise<AuthorizationRequestResponse|null> {
     if (!this.authorizationPromise) {
       return Promise.reject(
-        'No pending authorization request. Call performAuthorizationRequest() ?');
+          'No pending authorization request. Call performAuthorizationRequest() ?');
     }
 
     return this.authorizationPromise;

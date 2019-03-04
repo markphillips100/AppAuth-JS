@@ -13,7 +13,7 @@
  */
 
 import {BasicQueryStringUtils} from './query_string_utils';
-import {LocationLike, StringMap} from './types';
+import {LocationLike} from './types';
 
 const MOCK_LOCATION_UNDEFINED = 'undefined';
 
@@ -90,7 +90,6 @@ class MockLocationLike implements LocationLike {
 }
 
 describe('Query String Parser Tests', () => {
-
   const locationLike = new MockLocationLike();
   const parser = new BasicQueryStringUtils();
 
@@ -147,5 +146,4 @@ describe('Query String Parser Tests', () => {
     expect(result[keys[0]]).toBe('value1?', 'Expected value is "value1?"');
     expect(result[keys[1]]).toBe('value2 #', 'Expected value is "value2 #"');
   });
-
 });
